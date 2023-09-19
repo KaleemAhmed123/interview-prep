@@ -9,8 +9,12 @@ Array.prototype.myFilter = function (cb) {
 };
 
 const arr = [1, 2, 3, 4, 5, 6, 7];
+const newArr = arr.myFilter((elm) => {
+  return elm % 2 === 0;
+});
+console.log(newArr);
 console.log(
-  arr.myFilter((elm) => {
-    return elm % 2 === 0;
+  newArr.myFilter((elm) => {
+    return elm !== 4;
   })
 );
