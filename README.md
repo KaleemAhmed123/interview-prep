@@ -1,16 +1,7 @@
-# 100 Core MongoDB Interview Questions
-
-<div>
-<p align="center">
-<a href="https://devinterview.io/questions/web-and-mobile-development/">
-<img src="https://firebasestorage.googleapis.com/v0/b/dev-stack-app.appspot.com/o/github-blog-img%2Fweb-and-mobile-development-github-img.jpg?alt=media&token=1b5eeecc-c9fb-49f5-9e03-50cf2e309555" alt="web-and-mobile-development" width="100%">
-</a>
-</p>
-
-#### You can also find all 100 answers here 👉 [Devinterview.io - MongoDB](https://devinterview.io/questions/web-and-mobile-development/mongodb-interview-questions)
+# 100 MongoDB Interview Questions
 
 <br>
-
+	
 ## 1. What is _MongoDB_ and what are its main features?
 
 **MongoDB** is a robust, document-oriented NoSQL database designed for high performance, scalability, and developer agility.
@@ -900,11 +891,7 @@ db.myCollection.deleteMany({ age: { $gt: 25 } });
 
 <br>
 
-#### Explore all 100 answers here 👉 [Devinterview.io - MongoDB](https://devinterview.io/questions/web-and-mobile-development/mongodb-interview-questions)
+#### Credit to 👉 [Devinterview.io - MongoDB](https://devinterview.io/questions/web-and-mobile-development/mongodb-interview-questions)
 
 <br>
 
-<a href="https://devinterview.io/questions/web-and-mobile-development/">
-<img src="https://firebasestorage.googleapis.com/v0/b/dev-stack-app.appspot.com/o/github-blog-img%2Fweb-and-mobile-development-github-img.jpg?alt=media&token=1b5eeecc-c9fb-49f5-9e03-50cf2e309555" alt="web-and-mobile-development" width="100%">
-</a>
-</p>
