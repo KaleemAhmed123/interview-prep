@@ -890,8 +890,934 @@ db.myCollection.deleteMany({ age: { $gt: 25 } });
 ```
 
 <br>
+<h1>Populate</h1>
 
-#### Credit to 👉 [Devinterview.io - MongoDB](https://devinterview.io/questions/web-and-mobile-development/mongodb-interview-questions)
+**Few important notes:**
+- *Models* are defined using *Schemas*
+- Instance of a model is called *document*
+
+You can use **populate()** method to refer to the other documents.
+
+The below examples shows **one to many relation** between *authors* and *books*: 
+
+```typescript
+import mongoose from 'mongoose';
+
+const authorSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  books: [{
+    type: mongoose.Schema.Types.ObjectId, ref: 'Book'
+  }]
+})
+
+const bookSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  price: { type: Number, required: true }, 
+  author: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Author'
+  }
+})
+
+const Author = mongoose.model('Author', authorSchema);
+const Book = mongoose.model('Book', bookSchema);
+```
+Here, the ref option tells Mongoose which model to use during population. 
+
+#### Note: 
+```ObjectId, String, Number, Buffer``` all are valid types for refs. However, you should use ObjectUd unless you want to use it for advanced queries.
+
+<h2>Populating</h2>
+
+```typescript
+const book = await Book.findOne({ name: 'Harry Potter' }).populate('author');
+console.log(book.author) // returns author object
+```
+Similarly,
+```typescript
+const author = await Author.findOne({ name: 'John Doe' }); 
+console.log(author.books) // returns an array of book IDs 
+const authorWithBooks = await Author.findOne({ name: 'John Doe' }).populate('books');
+console.log(author.books) // returns an array of book objects
+```
+<h2>Field Selection</h2>
+
+What if we only want to populate other document's specific fields? 
+We can do that by passing in **field name** as a second argument to the populate method.
+```typescript
+const author = await Author.findOne({ name: 'John Doe' }); 
+console.log(author.books) // returns an array of book IDs 
+const authorWithBooks = await Author.findOne({ name: 'John Doe' }).populate('books', 'name')
+console.log(author.books) // returns an array of book objects with their names
+```
+<h2>Advance Queries</h2>
+
+What if we want to query books by an Author "John Doe" and **only** populate **names and no ID who's price is less than 10**?
+
+```typescript
+const author = await Author.findOne({ name: "John Doe" })
+                    .populate({
+                      path: 'books',
+                      match: {price: { $gte: 10 }},
+                      select: 'name -_id'
+                    })
+```
+
+More details : https://mongoosejs.com/docs/populate.html#populate_multiple_documents
+
+<br>
+
+# AGGREGATION
+
+Aggregation basically groups the data from multiple documents and operates in many ways on those grouped data in order to return one combined result.
+
+Unlike Refs/Populate, aggregation runs the query on the server side (mongodb) and returns the processed documents.
+
+It works with STAGES:
+
+`STAGE1` == (altered_data) ==> `STAGE2` == (altered_data) ==> `STAGE3
+previous stages's result is input for next stage 
+
+A stage can appear multiple times in a pipeline, with the exception of $out, $merge, and $geoNear stages. In this article, we will discuss in brief the seven major stages that you will come across frequently when aggregating documents in MongoDB. For a list of all available stages, see Aggregation Pipeline Stages.
+
+## $project
+Reshapes each document in the stream, e.g., by adding new fields or removing existing fields. For each input document, output one document.
+## $match
+Filters the document stream to allow only matching documents to pass unmodified into the next pipeline stage. For each input document, the output is either one document (a match) or zero document (no match).
+## $group
+Groups input documents by a specified identifier expression and apply the accumulator expression(s), if specified, to each group. $group consumes all input documents and outputs one document per each distinct group. The output documents only contain the identifier field (group id) and, if specified, accumulated fields.
+## $sort:
+Reorders the document stream by a specified sort key. The documents are unmodified, except for the order of the documents. For each input document, the output will be one document.
+## $skip
+Skips the first n documents where n is the specified skip number and passes the remaining documents unmodified to the pipeline. For each input document, the output is either zero document (for the first n documents) or one document (after the first n documents).
+## $limit
+Passes the first n documents unmodified to the pipeline where n is the specified limit. For each input document, the output is either one document (for the first n documents) or zero document (after the first n documents).
+## $unwind
+Breaks an array field from the input documents and outputs one document for each element. Each output document will have the same field, but the array field is replaced by an element value per document. For each input document, outputs n documents where n is the number of array elements and can be zero for an empty array.
+
+`
+
+Also, _it works perfectly with indexes similar to how "find works"_.
+
+DATASET:
+
+```js
+{
+        "_id" : ObjectId("603a87095854104ef6c863e1"),
+        "gender" : "male",
+        "name" : {
+                "title" : "mr",
+                "first" : "zachary",
+                "last" : "lo"
+        },
+        "location" : {
+                "street" : "3193 king st",
+                "city" : "chipman",
+                "state" : "yukon",
+                "postcode" : "H8N 1Q8",
+                "coordinates" : {
+                        "latitude" : "76.4507",
+                        "longitude" : "-70.2264"
+                },
+                "timezone" : {
+                        "offset" : "+11:00",
+                        "description" : "Magadan, Solomon Islands, New Caledonia"
+                }
+        },
+        "email" : "zachary.lo@example.com",
+        "login" : {
+                "uuid" : "76970c67-4801-4926-80f0-4872fe0aee42",
+                "username" : "lazyrabbit189",
+                "password" : "pass1",
+                "salt" : "BVMLMPwZ",
+                "md5" : "a6ff61f912af9958587e0fc0c8dc920b",
+                "sha1" : "bd37d1c699fb5a17031924c37e5d90ba4403e598",
+                "sha256" : "0305e3ebf6f4502790d804cff5989a6a928f466af6e36bd808ad9ed24e51fee7"
+        },
+        "dob" : {
+                "date" : "1988-10-17T03:45:04Z",
+                "age" : 29
+        },
+        "registered" : {
+                "date" : "2011-09-29T20:54:32Z",
+                "age" : 6
+        },
+        "phone" : "273-427-0510",
+        "cell" : "309-911-7770",
+        "id" : {
+                "name" : "",
+                "value" : null
+        },
+        "picture" : {
+                "large" : "https://randomuser.me/api/portraits/men/9.jpg",
+                "medium" : "https://randomuser.me/api/portraits/med/men/9.jpg",
+                "thumbnail" : "https://randomuser.me/api/portraits/thumb/men/9.jpg"
+        },
+        "nat" : "CA"
+}
+```
+
+Query:
+
+```js
+// takes in an array (pipeline)
+db.contacts.aggregate([
+  // $match === exactly same as find
+  { $match: { gender: 'female' } },
+]);
+```
+
+Here $match is a stage (of a pipeline which decide the returning docs). We can add multiple stages.
+
+Let us now try and
+
+**QUESTION**
+Find a custom collection that tells us how many people are living in all the states with the state names.
+
+```js
+db.contacts.aggregate([
+  { $match: { gender: 'female' } }, // stage1
+  {
+    $group: {
+      // accumulates data
+      // stage2
+      _id: { stateName: '$location.state' }, // _id is a syntax here
+      totalPeople: { $sum: 1 }, // aggregation functions (applied on all the returned docs (eg: $sum) )
+    },
+  },
+]);
+```
+
+Retreived Data:
+
+```js
+{ "_id" : { "stateName" : "hautes-alpes" }, "totalPeople" : 2 }
+{ "_id" : { "stateName" : "paris" }, "totalPeople" : 1 }
+{ "_id" : { "stateName" : "bremen" }, "totalPeople" : 11 }
+{ "_id" : { "stateName" : "oregon" }, "totalPeople" : 7 }
+{ "_id" : { "stateName" : "åland" }, "totalPeople" : 10 }
+{ "_id" : { "stateName" : "antalya" }, "totalPeople" : 1 }
+{ "_id" : { "stateName" : "brandenburg" }, "totalPeople" : 12 }
+{ "_id" : { "stateName" : "kastamonu" }, "totalPeople" : 1 }
+{ "_id" : { "stateName" : "eskişehir" }, "totalPeople" : 3 }
+{ "_id" : { "stateName" : "dorset" }, "totalPeople" : 1 }
+{ "_id" : { "stateName" : "mecklenburg-vorpommern" }, "totalPeople" : 11 }
+{ "_id" : { "stateName" : "cumbria" }, "totalPeople" : 2 }
+{ "_id" : { "stateName" : "melilla" }, "totalPeople" : 5 }
+{ "_id" : { "stateName" : "قم" }, "totalPeople" : 4 }
+{ "_id" : { "stateName" : "uşak" }, "totalPeople" : 1 }
+{ "_id" : { "stateName" : "burdur" }, "totalPeople" : 2 }
+{ "_id" : { "stateName" : "gelderland" }, "totalPeople" : 16 }
+{ "_id" : { "stateName" : "arizona" }, "totalPeople" : 4 }
+{ "_id" : { "stateName" : "dordogne" }, "totalPeople" : 1 }
+{ "_id" : { "stateName" : "bingöl" }, "totalPeople" : 2 }
+```
+
+Let us try and sorting the above result:
+
+```js
+db.contacts.aggregate([
+  { $match: { gender: 'female' } }, // stage1
+  { $group: { _id: { state: '$location.state' }, totalPersons: { $sum: 1 } } }, // stage2
+  { $sort: { totalPersons: -1 } }, // stage3
+]);
+```
+
+<hr />
+
+## Project stage
+
+Helps us transform the returning documents:
+
+**QUESTION**
+
+Let us say we want to:
+
+- Get all the docs with age > 20
+- I don't want IDS to show
+- I only want their genders to show
+- I want a new field "fullName" with their first and last names concatinated
+
+```js
+db.contacts.aggregate([
+  { $match: { 'dob.age': { $gt: 20 } } },
+  { $project: { _id: 0, gender: 1, fullName: { $concat: ['$name.first', ' ', '$name.last'] } } },
+]);
+```
+
+```javascript
+db.contacts.aggregate([
+        {$match: {'dob.age': {$gt: 20}}},
+        {$project: {
+            _id: 0,
+            gender: 1,
+            fullName: {
+                $concat: [
+                        { $toUpper: { "$name.first" } },
+                        " ",
+                        { $toUpper: { "$name.last" } }
+                ]
+           ` }
+        }}
+]);
+```
+
+Let us say, we want only the first alphabets to be in the uppercase.
+
+```js
+db.contacts.aggregate([
+  { $match: { 'dob.age': { $gt: 20 } } },
+  {
+    $project: {
+      _id: 0,
+      gender: 1,
+      fullName: {
+        $concat: [
+          { $toUpper: { $substrCP: ['$name.first', 0, 1] } },
+          {
+            $substrCP: [
+              '$name.first',
+              1, // start cutting from first index
+              { $subtract: [{ $strLenCP: '$name.first' }, 1] }, // until length -1
+            ],
+          },
+          ' ',
+          { $toUpper: { $substrCP: ['$name.last', 0, 1] } },
+          { $substrCP: ['$name.last', 1, { $subtract: [{ $strLenCP: '$name.first' }, 1] }] },
+        ],
+      },
+    },
+  },
+]);
+```
+
+## Multi stage PROJECT
+
+```js
+db.contacts.aggregate([
+  {
+    $project: {
+      _id: 0,
+      name: 1,
+      email: 1, // make sure you inherit fields at every stage to show them
+      location: {
+        random: 'field',
+        coordinates: ['$location.coordinates.longitude', '$location.coordinates.latitude'],
+      },
+    },
+  },
+  {
+    $project: {
+      location: 1,
+      email: 1, // make sure you iherit field
+      fullName: {
+        $concat: ['$name.first', ' ', '$name.last'],
+      },
+    },
+  },
+]);
+```
+
+Returned documents:
+
+```js
+[
+  {
+    location: { random: 'field', coordinates: ['101.5995', '78.8545'] },
+    email: 'isolino.viana@example.com',
+    fullName: 'isolino viana',
+  },
+  {
+    location: { random: 'field', coordinates: ['-18.5996', '-42.6128'] },
+    email: 'elijah.lewis@example.com',
+    fullName: 'elijah lewis',
+  },
+];
+```
+
+Same example as above, but this time we want the coordinates to be in integers:
+
+```js
+db.contacts.aggregate([
+  {
+    $project: {
+      _id: 0,
+      name: 1,
+      location: {
+        random: 'field',
+        coordinates: [
+          {
+            $convert: {
+              input: '$location.coordinates.longitude',
+              to: 'double',
+              onError: 0.0, // in case some error occurs, return as 0.0
+              onNull: 0, // in case its null, return 0.0
+            },
+          },
+          {
+            $convert: {
+              input: '$location.coordinates.latitude',
+              to: 'double',
+              onError: 0.0,
+              onNull: 0,
+            },
+          },
+        ],
+      },
+    },
+  },
+  {
+    $project: {
+      location: 1,
+      fullName: {
+        $concat: ['$name.first', ' ', '$name.last'],
+      },
+    },
+  },
+]);
+```
+
+<hr />
+
+**question**:
+
+I want the collection of all the users who's age is greater than 25 and print their names and their _dob.date_ to _generic date type_.
+
+```js
+db.contacts.aggregate([
+  {
+    $match: { 'dob.age': { $gt: 25 } },
+  },
+  {
+    $project: {
+      _id: 0,
+      name: {
+        $concat: ['$name.first', ' ', '$name.last'],
+      },
+      birthdate: {
+        $convert: {
+          input: '$dob.date',
+          to: 'date', // predefined mongo date type
+          onError: 0.0,
+          onNull: 0,
+        },
+      },
+    },
+  },
+]);
+```
+
+**Result**
+
+```js
+{ "name" : "zachary lo", "birthdate" : ISODate("1988-10-17T03:45:04Z") }
+{ "name" : "louise graham", "birthdate" : ISODate("1971-01-21T20:36:16Z") }
+{ "name" : "harvey chambers", "birthdate" : ISODate("1988-05-27T00:14:03Z") }
+{ "name" : "victor pedersen", "birthdate" : ISODate("1959-02-19T23:56:23Z") }
+```
+
+**SHORTCUT**:
+
+```js
+db.contacts.aggregate([
+  {
+    $match: { 'dob.age': { $gt: 25 } },
+  },
+  {
+    $project: {
+      _id: 0,
+      name: {
+        $concat: ['$name.first', ' ', '$name.last'],
+      },
+      birthdate: { $toDate: '$dob.date' }, // toDate is another aggregate operator
+    },
+  },
+]);
+```
+
+
+## DATASET (ADVANCE)
+
+```js
+[
+  {
+    "projectName": "first",
+    "resources": [
+      {
+        "resource": "EC2",
+        "region": "ap-south-1",
+        "params": {
+          "ImageId": "ami-0bcf5425cdc1d8a85",
+          "InstanceType": "t2.micro"
+        }
+      },
+      {
+        "resource": "S3",
+        "region": "ap-south-1",
+        "params": {
+          "Bucket": "test-bucket"
+        }
+      }
+    ]
+  }
+]
+```
+ I want to find out the documents who's resources array have 'EC2' and print out ONLY that element from the array.
+ 
+ __Solution__
+ 
+ ```js
+ const resources = await Project.aggregate([
+      {
+        $match: {
+          resources: {
+            $elemMatch: {
+              resource: { $eq: resourceType },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          projectName: '$projectName',
+          createdAt: '$createdAt',
+          resources: {
+            $filter: {
+              input: '$resources',
+              as: 'each', // use $$ to refer
+              cond: { $eq: ['$$each.resource', 'EC2'] },
+            },
+          },
+        },
+      },
+    ]);
+ ```
+
+
+OR 
+
+- $filter to iterate loop of resources array and find matching resource
+
+- $arrayElemAt to get first matching element from above filtered result
+
+- $replaceRoot to replace above return object to root
+
+```js
+const projects = await Project.aggregate([
+
+  { $match: { resources: { $elemMatch: { resource: { $eq: "EC2" } } } } },
+  // or below match is equal to above match condition
+  // { $match: { "resources.resource": "EC2" } },
+
+  {
+    $replaceRoot: {
+      newRoot: {
+        $arrayElemAt: [
+          {
+            $filter: {
+              input: "$resources",
+              cond: { $eq: ["$$this.resource", "EC2"] }
+            }
+          },
+          0
+        ]
+      }
+    }
+  }
+])
+```
+
+<br>
+
+
+# MORE ABOUT OPERATORS
+
+## $lt or $gt
+
+#### To find all the movies who's length is less than 60 mins:
+
+```js
+db.movies.find({ runtime: { $lt: 60 } });
+```
+
+#### To find all the movies who's rating is greater than 8.5
+
+```js
+db.movies.find({ 'rating.average': { $gt: 8.5 } });
+```
+
+## $elemMatch
+
+#### To find all movies who's genres contain 'adventure'
+
+```js
+db.movies.find({
+  'details.genres': {
+    $elemMatch: {
+      $eq: 'adventure',
+    },
+  },
+});
+
+// OR
+
+db.movies.find({
+  'details.genres': 'adventure',
+});
+```
+
+Find the users who's hobbies have title "Sports" _and_ that same field has frequency: _gte 3_
+
+**NOTE** : _You can use $and BUT that will not query on the same field_
+
+```js
+db.users.find({
+  hobbies: {
+    $elemMatch: { $and: [{ title: 'Sports' }, { frequency: { $gte: 3 } }] },
+  },
+});
+```
+
+## $in or $nin
+
+#### To find movies who's runtime is either 60 or 90
+
+```js
+db.movies.find({
+  runtime: {
+    $in: [60, 90],
+  },
+});
+```
+
+## To find movies who's runtime is neither 60 or 90
+
+```js
+db.movies.find({
+  runtime: {
+    $nin: [60, 90],
+  },
+});
+```
+
+# LOGICAL OPERATORS
+
+## $or and $nor
+
+#### To find movies who's genres contains comedy OR whos rating is less than 8.5
+
+```js
+db.movies.find({
+  $or: [{ 'details.genres': 'comedy' }, { 'rating.average': { $lt: 8.5 } }],
+});
+```
+
+You can also use _$nor, $and or $nand_.
+
+# ELEMENT OPERATORS
+
+## $exist or $type
+
+#### To find movies for which field runtime exists
+
+```js
+db.movies.find({
+  runtime: { $exists: true },
+});
+```
+
+# EVALUATE OPERATORS
+
+## $regex or $expr
+
+#### To find movies for which the genres consists "act"
+
+```js
+// option === i is for ignore case
+db.movies.find({ 'details.genres': { $regex: 'act', $option: 'i' } });
+```
+
+#### To find the movies list who's dislikes are more than rating
+
+_$expr is used to compare two fields within the document and while it is used, it is written first unlike other operators_
+
+```js
+db.movies.find({ $expr: { $gt: ['$rating.dislikes', 'rating.average'] } });
+```
+
+<br>
+
+
+# Indexing
+
+```js
+{
+        "_id" : ObjectId("603a87095854104ef6c86425"),
+        "gender" : "female",
+        "name" : {
+                "title" : "ms",
+                "first" : "kelya",
+                "last" : "philippe"
+        },
+        "location" : {
+                "street" : "3688 quai chauveau",
+                "city" : "avignon",
+                "state" : "aisne",
+                "postcode" : 47002,
+                "coordinates" : {
+                        "latitude" : "2.4082",
+                        "longitude" : "153.9632"
+                },
+                "timezone" : {
+                        "offset" : "+4:00",
+                        "description" : "Abu Dhabi, Muscat, Baku, Tbilisi"
+                }
+        },
+        "dob" : {
+                "date" : "1950-08-05T15:04:26Z",
+                "age" : 68
+        }
+}
+```
+
+**To check the speed of your search query analysis**:
+
+```js
+db.contacts.explain('executionStats').find({ 'dob.age': { $gt: 60 } });
+```
+
+## Creating index
+
+Let us say we need to create an index on **age**
+
+```js
+/*
+ *  1    ==    ascending ordered index
+ * -1    ==    descending ordered index
+ *  The speed doesn't depend on the sort much
+ *  because mongo can find the document from either direction
+ */
+db.contacts.createIndex({ 'dob.age': 1 });
+```
+
+### EXPLAINATION :
+
+Index scans (index stage) does not return the documents. They return the pointers to the documents.
+Later on, the _fetch stage_ reach out to the actual document using that pointer.
+
+### CAVIAT
+
+Let us say we want all the users with the ages greater than 10:
+
+```js
+// assuming indexing is still there
+db.contacts.find({ 'dob.age': { $gt: 10 } });
+```
+
+_This execution will actually be slower than the one WITHOUT INDEXING_.
+
+_WHY IS THAT?_
+
+This is because `age > 10` covers 90% of the documents inside of the database.
+So our database had to cover 90% of the indexes and returns all the pointers = pointing to their respective databases. And further, it took time to fetch those documents for us, so it actually was slow.
+
+The point is, you should not be using indexes for the queries which return a gigantic number of documents.
+_Rather, use indexes for fields which are usually unique and return less amount of documents_
+
+## Deleting index
+
+To delete the index:
+
+```js
+db.contacts.dropIndex({ 'dob.age': 1 });
+```
+
+_\_id field has a default indexed_
+
+## Getting indexes
+
+To find all the existing indexes on a collection:
+
+```js
+db.contacts.getIndexes();
+```
+
+## Creating Unique Index
+
+Mongo has \_id as default index since it is unique. Let us say we have collection of users who's email IDs are ALWAYS unique **AND** you want to query user using email field **frequently**, then you can create a new unique index like:
+
+```js
+db.users.createIndex({ email: 1 }, { unique: true });
+```
+
+## Creating COMPOUND INDEXES
+
+This is used to create indexes using two fields in your collection:
+
+```js
+// can be used together or from left -> right (see examples)
+db.users.createIndex({ 'dob.age': 1, gender: 1 });
+```
+
+This would create an index field something like: `33 male`.
+
+### Examples
+
+Query1 (good query for indexes):
+
+```js
+// order does not matter (can be different from that of index)
+db.users.find({ 'dob.age': 35, gender: 'male' });
+```
+
+Query2 (also fine `left to right`):
+
+```js
+// this will also use same index
+db.users.find({ 'dob.age': 35 });
+```
+
+Query3 (WRONG this won't use index)
+
+```js
+// query is right but it won't make use of index
+// if you move left to right, you have to include the left ones
+db.users.find({ gender: 'male' });
+```
+
+## Sorting using Indexes
+
+In case you need large amount of data to be sorted using a specific field in the document on a regular basis, you should use indexing for that partifcular field because it helps the response time by ALOT as the db wouldn't have to sort the returned data for you. This is because indexes are already sorted.
+
+## PARTIAL FILTERS
+
+Let us say you create indexes on age BUT you use the age query only for the gener male everytime in the users collection.
+
+So, there is no point of making index on the whole collection. This is what you would do:
+
+```js
+db.users.createIndex({ 'age.dob': 1 }, { partialFilterExpression: { gender: 'male' } });
+```
+
+You could also do something like :
+
+```js
+db.users.createIndex(
+  { 'age.dob': 1 },
+  { partialFilterExpression: { 'hobbies.frequency': { $gt: 6 } } } // where
+);
+```
+
+**NOTE:** : _to use this index, you will have to include exact indexes while querying. This won't work like compound indexes(left -> right). This is because, if mongo does that, since the indexes are partial, you might end up skipping returned data. HMMMMM....? Here, what if the the qeury satisfies the documents on which there is no indexing?_
+
+Further explaination:
+
+Let us consider the partial indexing:
+
+```js
+db.users.createIndex({ 'dob.age': 1 }, { partialFilterExpression: { gender: 'male' } });
+```
+
+This create indexes ONLY FOR MALES:
+
+Now if you query for people older than 60:
+
+```js
+db.users.find({ 'dob.age': 60 });
+```
+
+This^^ will NOT run IndexScan, BECAUSE what if we have users who are women and are > 60 age? And if we were to use index for scanning, it would have skipped those documents.
+
+_Therefore, mongo will run a collection scan_
+
+**The best way to use this index would be:**
+
+```js
+db.users.find({ 'db.age': 60, gender: 'male' });
+```
+
+## TEXT INDEXES (usually used for search functionality)
+
+Dataset:
+
+```js
+{
+        title: "Book1",
+        description: "This is an awesome book and is a must buy"
+}
+```
+
+Command:
+
+```js
+// use the word 'text' instead of 1/-1
+db.products.createIndex({ description: 'text' });
+```
+
+The collection must have ONLY ONE TEXT INDEX since it is very expensive.
+
+This will create an ARRAY of index with the words `awesome`, `book`, `must`, `buy` etc and ignore the rest of the generic words for us.
+
+**Search Query**
+
+```js
+db.products.find({ $text: { $search: 'awesome' } });
+```
+
+```js
+// this will return all the documents with the words 'awesome' and 'book'
+db.products.find({ $text: { $search: 'awesome book' } });
+```
+
+Let us say we want documents with specificly `awesome book` as a single word:
+
+```js
+db.products.find({ $text: { $search: '"awesome book"' } });
+```
+
+This will only return if the description has "awesome book" as a phrase.
+
+### SORT TEXT INDEXES RESULTS BASED ON EXACT MATCH (SCORE)
+
+Dataset:
+
+```js
+[
+  {
+    title: 'Red T-Shirt',
+    description: 'This T-shirt is read and is awesome',
+  },
+  {
+    title: 'A Book',
+    description: 'This is an awesome book about a young artist',
+  },
+];
+```
+
+Let us search for "awesome t-shirt" (_which will return both the docs as they both have either of the words_).
+But I want it to sort it based on the **most accurate match**.
+
+_SOLUTION_
+
+```js
+db.products.find(
+  { $text: { $search: ' awesome book ' } },
+  { score: { $meta: 'textScore' } } // this sorts it
+);
+```
+
+We can further change the order of sorting:
+
+```js
+db.products
+  .find({ $text: { $search: 'awesome book' } }, { score: { $meta: 'textScore' } })
+  .sort({ score: -1 }); // here
+```
+
+<br>
+
+
+#### Credit to 👉 [Devinterview.io and karankumarshreds)
 
 <br>
 
