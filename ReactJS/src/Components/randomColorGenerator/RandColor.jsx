@@ -7,6 +7,7 @@ const RandColor = () => {
 
 	const hexValues = [
 		"0",
+		"1",
 		"2",
 		"3",
 		"4",

@@ -1,0 +1,53 @@
+.wrapper {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    position: relative;
+    width: 550px;
+    border: 2px solid red;
+    overflow: hidden;
+}
+
+.leftIcon,
+.rightIcon {
+    cursor: pointer;
+    position: absolute;
+    color: white;
+    top: 50%;
+}
+
+.rightIcon {
+    right: 0;
+}
+
+.container img {
+    width: 100%;
+}
+
+.hide {
+    display: none;
+}
+
+.indicator-container {
+    bottom: .5rem;
+    left: 35%;
+    position: absolute;
+    display: flex;
+}
+
+.indicator {
+    border-radius: 50%;
+    /* border: 2px solid red !important;  */
+    background: rgb(176, 176, 176);
+    cursor: pointer;
+    margin: 0 5px;
+}
+
+.active {
+    background: white;
+}
