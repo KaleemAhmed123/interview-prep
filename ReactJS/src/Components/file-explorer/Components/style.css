@@ -1,0 +1,54 @@
+
+* {
+    box-sizing: border-box;
+    font-size: 1.1rem;
+    font-family: cursive;
+
+}
+
+.container {
+    border: 2px solid red;
+    height: 100vw;
+    padding: 20px;
+}
+.folder {
+    margin-top: 10px;
+    background-color: rgb(208, 216, 224);
+    display: flex;
+    justify-content: space-between;
+    width: 450px;
+    cursor: pointer;
+    padding: 0 10px;
+}
+
+.files {
+    display: flex;
+    flex-direction: column;
+    margin-left: -6px;
+}
+
+.subitems {
+    margin-top: 10px;
+    margin-left: 35px;
+    display: block;
+}
+.hide {
+    display: none;
+}
+
+button {
+    background: transparent;
+    border: 1px solid transparent;
+    outline: none;
+    cursor: pointer;
+    font-size: 120%;
+    transition: all 0.2s ease-out;
+}
+
+button:hover {
+    border-color: gray;
+}
+.input {
+    margin-top: 8px;
+    padding: 8px;
+}

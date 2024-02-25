@@ -10,7 +10,7 @@ const explorer = {
 			items: [
 				{
 					id: "3",
-					name: "public nested 1",
+					name: "static",
 					isFolder: true,
 					items: [
 						{
@@ -27,12 +27,6 @@ const explorer = {
 						},
 					],
 				},
-				{
-					id: "6",
-					name: "public_nested_file",
-					isFolder: false,
-					items: [],
-				},
 			],
 		},
 		{
@@ -40,6 +34,25 @@ const explorer = {
 			name: "src",
 			isFolder: true,
 			items: [
+				{
+					id: "3",
+					name: "Comments",
+					isFolder: true,
+					items: [
+						{
+							id: "4",
+							name: "Comments.js",
+							isFolder: false,
+							items: [],
+						},
+						{
+							id: "5",
+							name: "Comments.css",
+							isFolder: false,
+							items: [],
+						},
+					],
+				},
 				{
 					id: "8",
 					name: "App.js",

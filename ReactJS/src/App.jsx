@@ -1,7 +1,7 @@
 import "./App.css";
 import Accordian from "./Components/Accordian/Accordian";
 import BoxClicker from "./Components/boxClicker/BoxClicker";
-import Explorer from "./Components/file-explorer/Explorer";
+import Explorer from "./Components/file-explorer/Components/Explorer";
 import RandColor from "./Components/randomColorGenerator/RandColor";
 import Slider from "./Components/slider/Slider";
 import Ratings from "./Components/starRating/Ratings";
