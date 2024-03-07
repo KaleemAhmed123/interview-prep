@@ -1,0 +1,105 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+.App {
+    font-family: cursive;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #dedeec;
+    letter-spacing: 3px;
+}
+
+.container {
+    width: 60%;
+    max-width: 600px;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    border: 2px solid gray;
+    border-radius: 30px 0 20px 0;
+    background: white;
+    box-shadow: 0 0 30px rgb(172, 172, 172);
+    animation: slide 0.3s ease;
+}
+
+@keyframes slide {
+    from {
+        translate: 0 -50%;
+        opacity: 0;
+    }
+
+    to {
+        translate: 0 0;
+        opacity: 1;
+    }
+}
+
+h1 {
+    font-size: 3rem;
+    margin-bottom: 35px;
+}
+
+.btn-container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.btn {
+    font-family: inherit;
+    border-radius: 5px;
+    padding: 10px 20px;
+    background-color: #008000;
+    color: #ececec;
+    cursor: pointer;
+    font-weight: bold;
+    letter-spacing: 2px;
+    font-size: 1.2rem;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    opacity: 0.95;
+    scale: 1.05;
+}
+
+.active {
+    opacity: 0.95;
+    translate: 0 -5px;
+    border-color: black;
+}
+
+.btn-stop {
+    background-color: orange;
+}
+
+.btn-reset {
+    background-color: rgb(112, 112, 112);
+}
+
+.btn-show {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    translate: -50% 0;
+}
+
+@media screen and (max-width: 768px) {
+    .btn-container {
+        flex-direction: column;
+    }
+
+    .container {
+        text-align: center;
+        width: 80%;
+    }
+}
