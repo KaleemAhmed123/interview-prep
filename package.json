@@ -1,0 +1,30 @@
+{
+  "name": "interview-prep",
+  "version": "1.0.0",
+  "description": "Js resources for revision purpose",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KaleemAhmed123/interview-prep.git"
+  },
+  "keywords": [
+    "JS",
+    "Node",
+    "Express",
+    "React",
+    "DSA"
+  ],
+  "author": "Kaleem Ahmed",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KaleemAhmed123/interview-prep/issues"
+  },
+  "homepage": "https://github.com/KaleemAhmed123/interview-prep#readme",
+  "dependencies": {
+    "csv-parser": "^3.0.0"
+  }
+}
