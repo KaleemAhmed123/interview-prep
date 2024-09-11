@@ -35,12 +35,13 @@ const matchesWonByTeam = function (data) {
   // return Array.from(mp.entries()).map(([season, matches]) => ({season, matches}));
   const result = {};
   for (const [team, wins] of mp) {
-    result[team] = wins;
-  }
+      result[team] = wins;
+    }
 
   return result;
 };
 
+// 3 => Extra runs conceded per team in the year 2016
 const extraRunsConcededInYear = function (matchData, deliveriesData, year) {
   const mp = new Map();
   for (const match of matchData) {
@@ -69,12 +70,49 @@ const extraRunsConcededInYear = function (matchData, deliveriesData, year) {
   return result;
 }
 
-// Extra runs conceded per team in the year 2016
-// Top 10 economical bowlers in the year 2015
+// 4 => Top 10 economical bowlers in the year 2015
+const topEconomicalBowler = function(matchesData, deliveriesData, year) {
+    const mp = new Map();
+    for (const match of matchesData) {
+      const { season } = match;
+  
+      if (season === year) {
+        for (const delivery of deliveriesData) {
+            const {bowler, total_runs} = delivery;
+            if(!mp.has(bowler)) {
+                mp.set(bowler, {balls: 0, runs: 0});
+            } else {
+                const prev = mp.get(bowler);
+                prev.balls += 1;
+                prev.runs += Number(total_runs);
+                mp.set(bowler, prev);
+            }
+        }
+      }
+    }
+    const result = [];
+    for (const [bowler, ballsAndRuns] of mp) {
+      result.push({bowler, ballsAndRuns});
+    }
+
+    result.sort((a, b) => {
+        let first = a.ballsAndRuns.runs/a.ballsAndRuns.balls;
+        let second = b.ballsAndRuns.runs/b.ballsAndRuns.balls;
+
+        return first - second;
+    })
+  
+    return result;
+}
+
+
+
 
 const result1 = matchesPerYear(matchesData);
 const result2 = matchesWonByTeam(matchesData);
 const result3 = extraRunsConcededInYear(matchesData, deliveriesData, "2016");
+const result4 = topEconomicalBowler(matchesData, deliveriesData, "2015");
 console.log("{Key => year and value => numberOfMatches} \n", result1);
 console.log("{Key => team and value => wins} \n", result2);
 console.log("{Key => team and value => extras_in_year_2016} \n", result3);
+console.log("{Key => team and value => {bowlCount, totalRuns} } \n", result4);
