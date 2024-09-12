@@ -22,20 +22,31 @@ const matchesPerYear = function (data) {
 };
 
 // 2 => Number of matches won per team per year in IPL.
-const matchesWonByTeam = function (data) {
+const matchesWonByTeam = function (matchesData) {
   const mp = new Map();
-  for (const match of data) {
-    const { winner } = match;
-    if (!mp.has(winner)) {
-      mp.set(winner, 1);
+  for (const match of matchesData) {
+    const { season, winner } = match;
+
+    if (!mp.has(season)) {
+      mp.set(season, new Map());
+    }
+
+    const seasonedMp = mp.get(season);
+    if (!seasonedMp.has(winner)) {
+      seasonedMp.set(winner, 1);
     } else {
-      mp.set(winner, mp.get(winner) + 1);
+      seasonedMp.set(winner, seasonedMp.get(winner) + 1);
     }
   }
   // return Array.from(mp.entries()).map(([season, matches]) => ({season, matches}));
-  const result = {};
-  for (const [team, wins] of mp) {
-    result[team] = wins;
+  const result = [];
+  for (const [year, teamsWinsMap] of mp) {
+    let teamsWinsYearArray = [];
+    for (const [team, winsThatYear] of teamsWinsMap) {
+      // Remove the incorrect condition
+      teamsWinsYearArray.push({ team, wins: winsThatYear });
+    }
+    result.push({ year, teams_won: teamsWinsYearArray });
   }
 
   return result;
@@ -73,6 +84,10 @@ const extraRunsConcededInYear = function (matchData, deliveriesData, year) {
 // 4 => Top 10 economical bowlers in the year 2015
 const topEconomicalBowler = function (matchesData, deliveriesData, year) {
   const mp = new Map();
+  // const t1 = performance.now();
+  // console.log(t1);
+  console.time("Time Taken");
+
   for (const match of matchesData) {
     const { season } = match;
 
@@ -81,12 +96,11 @@ const topEconomicalBowler = function (matchesData, deliveriesData, year) {
         const { bowler, total_runs } = delivery;
         if (!mp.has(bowler)) {
           mp.set(bowler, { balls: 0, runs: 0 });
-        } else {
-          const prev = mp.get(bowler);
-          prev.balls += 1;
-          prev.runs += Number(total_runs);
-          mp.set(bowler, prev);
         }
+        const prev = mp.get(bowler);
+        prev.balls += 1;
+        prev.runs += Number(total_runs);
+        mp.set(bowler, prev);
       }
     }
   }
@@ -103,6 +117,12 @@ const topEconomicalBowler = function (matchesData, deliveriesData, year) {
   });
 
   const top_ten_economic = result.slice(0, 10);
+
+  // const t2 = performance.now();
+  // console.log(t2);
+  // console.log("time taken", t2 - t1);
+
+  console.timeLog("Time Taken");
 
   return top_ten_economic;
 };
@@ -142,14 +162,13 @@ const manOfTheMatchAwardsPerSeason = function (matchesData) {
 
     if (!mp.has(season)) {
       mp.set(season, new Map());
-    } else {
-      const yearMap = mp.get(season);
+    }
 
-      if (!yearMap.has(player_of_match)) {
-        yearMap.set(player_of_match, 1);
-      } else {
-        yearMap.set(player_of_match, yearMap.get(player_of_match) + 1);
-      }
+    const yearMap = mp.get(season);
+    if (!yearMap.has(player_of_match)) {
+      yearMap.set(player_of_match, 1);
+    } else {
+      yearMap.set(player_of_match, yearMap.get(player_of_match) + 1);
     }
   }
 
@@ -177,6 +196,8 @@ const manOfTheMatchAwardsPerSeason = function (matchesData) {
 
 // 7 => Find the strike rate of a batsman for each season
 
+const strikeRateOfBatsmanPerSeason = function () {};
+
 const result1 = matchesPerYear(matchesData);
 const result2 = matchesWonByTeam(matchesData);
 const result3 = extraRunsConcededInYear(matchesData, deliveriesData, "2016");
@@ -184,8 +205,9 @@ const result4 = topEconomicalBowler(matchesData, deliveriesData, "2015");
 const result5 = timesWhenTeamWonMatchAndToss(matchesData);
 const result6 = manOfTheMatchAwardsPerSeason(matchesData);
 // console.log("{Key => year and value => numberOfMatches} \n", result1);
-// console.log("{Key => team and value => wins} \n", result2);
+// console.log('Key and the [object, object........]') return krega so used dir
+console.dir(result2, { depth: null, colors: true });
 // console.log("{Key => team and value => extras_in_year_2016} \n", result3);
 // console.log("{Key => team and value => {bowlCount, totalRuns} } \n", result4);
 // console.log("{Key => team and value => {bowlCount, totalRuns} } \n", result5);
-console.log("{Key => year and value => manOfTheMatches} \n", result6);
+// console.log("{Key => year and value => manOfTheMatches} \n", result6);
